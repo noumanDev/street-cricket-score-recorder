@@ -58,9 +58,10 @@ const groupBallsByOvers = (balls: Ball[]): GroupedBallsAndOvers => {
         totalOvers: groupedBalls.length === 0 ? 0 : validDeliveriesInOver === 0 || validDeliveriesInOver === 6 ? groupedBalls.length : groupedBalls.length - 1,
         lastOverBalls: validDeliveriesInOver,
     };
-   
+
     return { groupedBalls, oversCount };
 };
+
 
 interface MatchContextType {
     matches: CricketMatch[];
@@ -69,8 +70,6 @@ interface MatchContextType {
     switchToPreviousMatch: () => void;
     matchTitle: String | null;
     addNewMatch: (numberOfOvers: number) => void;
-    setAddMatchPopupVisible: React.Dispatch<React.SetStateAction<boolean>>;
-    isAddMatchPopupVisible: boolean;
     currentMatch?: CricketMatch;
     currentInning: InningType;
     setCurrentInning: React.Dispatch<React.SetStateAction<InningType>>;
@@ -79,7 +78,8 @@ interface MatchContextType {
     currentInningStats: InningStats;
     undoLastBall: () => void;
     toggleLockInning: () => void;
-    currentInningOvers: GroupedBallsAndOvers
+    currentInningOvers: GroupedBallsAndOvers;
+    editMatch: (newOvers: number) => void
 }
 const testMatches: CricketMatch[] = [
     {
@@ -104,14 +104,13 @@ export const useMatchContext = () => {
 const MatchProvider: React.FC = ({ children }) => {
     const [matches, setMatches] = useState<CricketMatch[]>([]);
     const [currentMatchIndex, setCurrentMatchIndex] = useState<number>(0);
-    const [isAddMatchPopupVisible, setAddMatchPopupVisible] = useState(false);
     const [currentInning, setCurrentInning] = useState<InningType>('inning1');
 
     // Fetch matches from AsyncStorage on initial load
     useEffect(() => {
         const fetchMatches = async () => {
             try {
-                
+
                 const storedMatches = await AsyncStorage.getItem('matches');
 
                 if (storedMatches) {
@@ -174,7 +173,6 @@ const MatchProvider: React.FC = ({ children }) => {
         };
 
         setMatches((prevMatches) => [...prevMatches, newMatch]);
-        setAddMatchPopupVisible(false);
     };
 
     const addBallToInning = useCallback((ballData: Ball) => {
@@ -232,6 +230,19 @@ const MatchProvider: React.FC = ({ children }) => {
             overDetails = groupBallsByOvers(currentInningDetails?.balls);
         return overDetails
     }, [currentInningDetails?.balls])
+
+    const editMatch = (newOvers: number) => {
+        setMatches(prevMatches => {
+            const updatedMatches = [...prevMatches];
+            const currentMatch = updatedMatches[currentMatchIndex];
+
+            // Update the overs of the current match
+            currentMatch.overs = newOvers;
+
+            return updatedMatches;
+        });
+    };
+
     return (
         <MatchContext.Provider
             value={{
@@ -241,8 +252,6 @@ const MatchProvider: React.FC = ({ children }) => {
                 switchToPreviousMatch,
                 matchTitle,
                 addNewMatch,
-                setAddMatchPopupVisible,
-                isAddMatchPopupVisible,
                 currentMatch,
                 currentInning,
                 setCurrentInning,
@@ -251,7 +260,8 @@ const MatchProvider: React.FC = ({ children }) => {
                 currentInningStats,
                 undoLastBall,
                 toggleLockInning,
-                currentInningOvers
+                currentInningOvers,
+                editMatch
             }}
         >
             {children}

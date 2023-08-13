@@ -39,9 +39,7 @@ const MainComponent: React.FC = () => {
         <View style={styles.container}>
             {/* Other components */}
             <Stepper
-                text={matchTitle}
-                nextButtonHandler={switchToNextMatch}
-                previousButtonHandler={switchToPreviousMatch}
+
             />
             <MultiTabComponent />
             <View style={{ flex: 1 }}>
@@ -59,5 +57,6 @@ const styles = StyleSheet.create({
         backgroundColor: 'white',
 
     },
+
 });
 export default MainComponent;
