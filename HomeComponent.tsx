@@ -31,9 +31,10 @@ import BallInputComponent from './BallInputComponent';
 import MultiTabComponent from './MultiTabComponent';
 import StatBoard from './StatBoard';
 import BallDisplay from './BallDisplay';
+import FreeHitIndicator from './FreeHitIndicator';
 
 const MainComponent: React.FC = () => {
-    const { switchToNextMatch, switchToPreviousMatch, matchTitle, currentMatchIndex, currentMatch, currentInning, currentInningDetails, currentInningStats } = useMatchContext();
+    const { isFreeHit, switchToNextMatch, switchToPreviousMatch, matchTitle, currentMatchIndex, currentMatch, currentInning, currentInningDetails, currentInningStats } = useMatchContext();
 
     return (
         <View style={styles.container}>
@@ -45,6 +46,7 @@ const MainComponent: React.FC = () => {
             <View style={{ flex: 1 }}>
                 <StatBoard stats={currentInningStats} balls={currentInningDetails?.balls || []} />
             </View>
+            {isFreeHit && <FreeHitIndicator />}
             <BallInputComponent />
             <AddMatchButton />
         </View>

@@ -5,7 +5,7 @@ import { View, Text, TouchableOpacity, StyleSheet, Modal } from 'react-native';
 import { useMatchContext } from './MatchContext';
 
 const BallInputComponent: React.FC = () => {
-    const { addBallToInning, currentInning, currentInningDetails, undoLastBall, toggleLockInning } = useMatchContext();
+    const { addBallToInning, currentInning, currentInningDetails, undoLastBall, toggleLockInning, isFreeHit } = useMatchContext();
     const [showPopup, setShowPopup] = useState(false);
 
     const handleButtonClick = (score: number, isWide: boolean, isNoBall: boolean, isWicket: boolean = false) => {
@@ -75,7 +75,7 @@ const BallInputComponent: React.FC = () => {
                         <TouchableOpacity style={[styles.button, styles.noButton]} onPress={() => handleButtonClick(0, false, true)}>
                             <Text style={[styles.buttonText, styles.noButtonText]}>No</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity style={[styles.button, styles.wicketButton]} onPress={() => handleButtonClick(0, false, false, true)}>
+                        <TouchableOpacity disabled={isFreeHit} style={[styles.button, styles.wicketButton]} onPress={() => handleButtonClick(0, false, false, true)}>
                             <Text style={[styles.buttonText, styles.wicketButtonText]}>Wicket</Text>
                         </TouchableOpacity>
                         <TouchableOpacity style={[styles.button, styles.undoButton]} onPress={undoLastBall}>

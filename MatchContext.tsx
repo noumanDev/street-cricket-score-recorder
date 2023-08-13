@@ -79,7 +79,8 @@ interface MatchContextType {
     undoLastBall: () => void;
     toggleLockInning: () => void;
     currentInningOvers: GroupedBallsAndOvers;
-    editMatch: (newOvers: number) => void
+    editMatch: (newOvers: number) => void;
+    isFreeHit: boolean
 }
 const testMatches: CricketMatch[] = [
     {
@@ -243,6 +244,15 @@ const MatchProvider: React.FC = ({ children }) => {
         });
     };
 
+
+    const isFreeHit = useMemo((): boolean => {
+        const balls = currentInningDetails?.balls;
+        if (!balls) return false;
+
+        const lastBall = balls[balls.length - 1];
+        return lastBall?.isNoBall;
+    }, [ currentInningOvers]);
+
     return (
         <MatchContext.Provider
             value={{
@@ -261,7 +271,8 @@ const MatchProvider: React.FC = ({ children }) => {
                 undoLastBall,
                 toggleLockInning,
                 currentInningOvers,
-                editMatch
+                editMatch,
+                isFreeHit
             }}
         >
             {children}
