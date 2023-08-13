@@ -77,7 +77,8 @@ const styles = StyleSheet.create({
         height: 2,
         backgroundColor: 'grey', // You can change the color for each over line here
         width: 40 * 6 + 10, // Total width of an over (6 balls + 10 for padding)
-        marginBottom: 5
+        marginBottom: 8,
+        opacity:0.3
     },
     overLabel: {
         color: 'black', // You can change the color  for each over label here

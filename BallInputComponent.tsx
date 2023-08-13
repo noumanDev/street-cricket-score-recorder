@@ -138,8 +138,9 @@ const styles = StyleSheet.create({
         paddingHorizontal: 16,
         justifyContent: 'center',
         alignItems: 'center',
-        borderRadius: 8,
-        marginLeft:2
+        borderRadius: 38,
+        marginLeft:2,
+        
     },
     buttonText: {
         fontSize: 16,
