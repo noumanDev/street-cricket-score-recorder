@@ -2,8 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { StyleSheet, Text, TouchableOpacity } from 'react-native';
-import AddMatchPopup from './AddMatchPopup';
+import _ from 'lodash';
 
 // Import the types from the previous section (Inning and CricketMatch)
 export type InningType = 'inning1' | 'inning2';
@@ -22,29 +21,24 @@ const calculateScoreNWickets = (balls: Ball[]) => {
 
     return { score: totalScore, wickets: totalWickets };
 };
-const calculateInningStat = (balls: Ball[]) => {
-    const BallsNWickets = calculateScoreNWickets(balls);
-    const overDetails = groupBallsByOvers(balls);
-    return { ...BallsNWickets, overDetails };
-};
+
 
 const groupBallsByOvers = (balls: Ball[]): GroupedBallsAndOvers => {
     const groupedBalls: GroupedBalls = [];
     let currentOver: Ball[] = [];
-    let validDeliveriesInOver = 0;
+    let validDeliveries = 0;
 
 
     balls.forEach((ball) => {
-        if (validDeliveriesInOver === 6) {
+        if (validDeliveries % 6 === 0 && validDeliveries !== 0) {
             groupedBalls.push(currentOver);
             currentOver = [];
-            validDeliveriesInOver = 0;
 
         }
 
         if (!ball.isNoBall && !ball.isWide) {
             currentOver.push(ball);
-            validDeliveriesInOver += 1;
+            validDeliveries += 1;
         } else {
             currentOver.push(ball);
         }
@@ -55,12 +49,17 @@ const groupBallsByOvers = (balls: Ball[]): GroupedBallsAndOvers => {
     }
 
     const oversCount: OversCount = {
-        totalOvers: groupedBalls.length === 0 ? 0 : validDeliveriesInOver === 0 || validDeliveriesInOver === 6 ? groupedBalls.length : groupedBalls.length - 1,
-        lastOverBalls: validDeliveriesInOver,
+        totalOvers: groupedBalls.length === 0 ? 0 : validDeliveries === 0 || validDeliveries % 6 === 0 ? groupedBalls.length : groupedBalls.length - 1,
+        lastOverBalls: validDeliveries % 6,
     };
 
-    return { groupedBalls, oversCount };
+
+    return { groupedBalls, oversCount, validDeliveries };
 };
+
+const calculateInningScore = (balls: Ball[]) => {
+    return _.sumBy(balls, "score");
+}
 
 
 interface MatchContextType {
@@ -80,7 +79,8 @@ interface MatchContextType {
     toggleLockInning: () => void;
     currentInningOvers: GroupedBallsAndOvers;
     editMatch: (newOvers: number) => void;
-    isFreeHit: boolean
+    isFreeHit: boolean;
+
 }
 const testMatches: CricketMatch[] = [
     {
@@ -117,6 +117,7 @@ const MatchProvider: React.FC = ({ children }) => {
                 if (storedMatches) {
                     const initialData = JSON.parse(storedMatches).length > 0 ? JSON.parse(storedMatches) : testMatches;
                     setMatches(initialData);
+                    console.log("indial mat matches", initialData.length)
                     setCurrentMatchIndex(initialData.length > 0 ? initialData.length - 1 : 0);
                 }
 
@@ -177,10 +178,9 @@ const MatchProvider: React.FC = ({ children }) => {
 
     };
     useEffect(() => {
-        console.log('next match')
         setCurrentMatchIndex(matches.length > 0 ? matches.length - 1 : 0);
-
     }, [setMatches, matches]);
+
 
     const addBallToInning = useCallback((ballData: Ball) => {
         setMatches(prevMatches => {
@@ -219,10 +219,29 @@ const MatchProvider: React.FC = ({ children }) => {
     }, [currentInning, currentMatchIndex, setMatches]);
 
     const currentInningDetails = useMemo(() => currentMatch ? currentMatch[currentInning] : null, [currentInning, currentMatch]);
+    const calculateInningStat = (balls: Ball[]) => {
+        const scoreNWickets = calculateScoreNWickets(balls);
+        const overDetails = groupBallsByOvers(balls);
 
+        let secondInningSpecifics: SecondInningSpecifics | null = null;
+
+        if (currentInning === "inning2" && currentMatch) {
+            const target = calculateInningScore(currentMatch?.inning1.balls);
+            const required = target - scoreNWickets.score;
+            const remainingBalls = currentMatch.overs * 6 - overDetails.validDeliveries;
+            secondInningSpecifics = {
+                target,
+                required,
+                remainingBalls
+            };
+
+
+        }
+        return { ...scoreNWickets, overDetails, secondInningSpecifics };
+    };
     const currentInningStats = useMemo(() => {
 
-        let stats: InningStats = { score: 0, wickets: 0, overDetails: { groupedBalls: [], oversCount: { totalOvers: 0, lastOverBalls: 0 } } };
+        let stats: InningStats = { score: 0, wickets: 0, overDetails: { validDeliveries: 0, groupedBalls: [], oversCount: { totalOvers: 0, lastOverBalls: 0 } }, secondInningSpecifics: currentInning === "inning1" ? null : { target: 0, required: 0, remainingBalls: 0 } };
 
         if (currentInningDetails && currentInningDetails.balls) {
             stats = { ...calculateInningStat(currentInningDetails.balls) };
@@ -232,7 +251,7 @@ const MatchProvider: React.FC = ({ children }) => {
     }, [currentInningDetails?.balls, calculateInningStat, addBallToInning, undoLastBall]);
 
     const currentInningOvers = useMemo(() => {
-        let overDetails: GroupedBallsAndOvers = { groupedBalls: [], oversCount: { totalOvers: 0, lastOverBalls: 0 } }
+        let overDetails: GroupedBallsAndOvers = { groupedBalls: [], oversCount: { totalOvers: 0, lastOverBalls: 0 }, validDeliveriesInOver: 0 }
         if (currentInningDetails?.balls)
             overDetails = groupBallsByOvers(currentInningDetails?.balls);
         return overDetails
@@ -259,6 +278,14 @@ const MatchProvider: React.FC = ({ children }) => {
         return lastBall?.isNoBall;
     }, [currentInningOvers]);
 
+    const target = useMemo((): number => {
+        if (currentInning === "inning1") return 0;
+        return _.sumBy(currentMatch?.inning1.balls, "score");
+
+    }, [currentInning]);
+
+
+
     return (
         <MatchContext.Provider
             value={{
@@ -278,7 +305,8 @@ const MatchProvider: React.FC = ({ children }) => {
                 toggleLockInning,
                 currentInningOvers,
                 editMatch,
-                isFreeHit
+                isFreeHit,
+
             }}
         >
             {children}

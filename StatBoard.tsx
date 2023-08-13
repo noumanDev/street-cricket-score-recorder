@@ -1,14 +1,13 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import BallDisplay from './BallDisplay';
+import { useMatchContext } from './MatchContext';
 
 
-interface Props {
-    stats: InningStats;
-    balls: Ball[] | undefined;
-}
 
-const StatBoard: React.FC<Props> = ({ stats, balls }) => {
+
+const StatBoard: React.FC = () => {
+    const { currentInningStats: stats, currentInning } = useMatchContext();
 
     return (
         <View style={styles.scoreContainer}>
@@ -16,7 +15,12 @@ const StatBoard: React.FC<Props> = ({ stats, balls }) => {
                 <View style={styles.scoreDisplay}>
                     <Text style={styles.score}>{stats.score}/{stats.wickets}</Text>
                     <Text style={styles.overs}>({stats.overDetails.oversCount.totalOvers}{`${stats.overDetails.oversCount.lastOverBalls < 6 ? "." + stats.overDetails.oversCount.lastOverBalls : ""}`})</Text>
+                    {stats.secondInningSpecifics && <Text style={styles.target}>Target : {stats.secondInningSpecifics.target}</Text>}
                 </View>
+                <View>
+                    {stats.secondInningSpecifics && <Text style={styles.required}>need {stats.secondInningSpecifics.required} runs in {stats.secondInningSpecifics.remainingBalls} balls</Text>}
+                </View>
+
             </View>
             <View style={styles.ballDisplay}>
                 <BallDisplay balls={stats.overDetails.groupedBalls} />
@@ -60,7 +64,13 @@ const styles = StyleSheet.create({
         shadowRadius: 4,
 
     },
-    
+    target: {
+        textAlign: 'center',
+    },
+    required: {
+        textAlign: "center",
+        marginTop:-15
+    },
     ballDisplay: {
         // alignSelf: 'flex-end',
 

@@ -44,7 +44,7 @@ const MainComponent: React.FC = () => {
             />
             <MultiTabComponent />
             <View style={{ flex: 1 }}>
-                <StatBoard stats={currentInningStats} balls={currentInningDetails?.balls || []} />
+                <StatBoard />
             </View>
             {isFreeHit && <FreeHitIndicator />}
             <BallInputComponent />
