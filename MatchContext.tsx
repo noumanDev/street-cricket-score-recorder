@@ -117,7 +117,7 @@ const MatchProvider: React.FC = ({ children }) => {
                 if (storedMatches) {
                     const initialData = JSON.parse(storedMatches).length > 0 ? JSON.parse(storedMatches) : testMatches;
                     setMatches(initialData);
-                    setCurrentMatchIndex(0);
+                    setCurrentMatchIndex(initialData.length > 0 ? initialData.length - 1 : 0);
                 }
 
             } catch (error) {
@@ -174,7 +174,13 @@ const MatchProvider: React.FC = ({ children }) => {
         };
 
         setMatches((prevMatches) => [...prevMatches, newMatch]);
+
     };
+    useEffect(() => {
+        console.log('next match')
+        setCurrentMatchIndex(matches.length > 0 ? matches.length - 1 : 0);
+
+    }, [setMatches, matches]);
 
     const addBallToInning = useCallback((ballData: Ball) => {
         setMatches(prevMatches => {
@@ -251,7 +257,7 @@ const MatchProvider: React.FC = ({ children }) => {
 
         const lastBall = balls[balls.length - 1];
         return lastBall?.isNoBall;
-    }, [ currentInningOvers]);
+    }, [currentInningOvers]);
 
     return (
         <MatchContext.Provider
