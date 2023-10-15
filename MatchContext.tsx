@@ -30,18 +30,18 @@ const groupBallsByOvers = (balls: Ball[]): GroupedBallsAndOvers => {
 
 
     balls.forEach((ball) => {
-        if (validDeliveries % 6 === 0 && validDeliveries !== 0) {
+        if (validDeliveries % 6 === 0 && validDeliveries !== 0) { //over complete
             groupedBalls.push(currentOver);
             currentOver = [];
+            validDeliveries=0;
 
         }
 
-        if (!ball.isNoBall && !ball.isWide) {
-            currentOver.push(ball);
+
+        if (!ball.isNoBall && !ball.isWide) { //valid ball bowlled
             validDeliveries += 1;
-        } else {
-            currentOver.push(ball);
         }
+        currentOver.push(ball); //add ball to the over
     });
 
     if (currentOver.length > 0) {
@@ -49,7 +49,7 @@ const groupBallsByOvers = (balls: Ball[]): GroupedBallsAndOvers => {
     }
 
     const oversCount: OversCount = {
-        totalOvers: groupedBalls.length === 0 ? 0 : validDeliveries === 0 || validDeliveries % 6 === 0 ? groupedBalls.length : groupedBalls.length - 1,
+        totalOvers: groupedBalls.length === 0 ? 0 : validDeliveries % 6 === 0 || (validDeliveries === 0 && currentOver.length > 0) ? groupedBalls.length : groupedBalls.length - 1,
         lastOverBalls: validDeliveries % 6,
     };
 
