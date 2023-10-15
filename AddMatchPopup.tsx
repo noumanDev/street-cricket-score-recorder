@@ -1,22 +1,29 @@
-// AddMatchPopup.tsx
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Modal, StyleSheet } from 'react-native';
 
 interface AddMatchPopupProps {
     isVisible: boolean;
     onCancel: () => void;
     onConfirm: (numberOfOvers: number) => void;
+    isEditing?: boolean; // Add this prop for editing
+    initialOvers?: number; // Add this prop for editing
 }
 
-const AddMatchPopup: React.FC<AddMatchPopupProps> = ({ isVisible, onCancel, onConfirm }) => {
-    const [numberOfOvers, setNumberOfOvers] = useState('');
+const AddMatchPopup: React.FC<AddMatchPopupProps> = ({ isVisible, onCancel, onConfirm, isEditing = false, initialOvers = 0 }) => {
+    const [numberOfOvers, setNumberOfOvers] = useState(isEditing ? initialOvers.toString() : '');
+
+    useEffect(() => {
+        if (isEditing) {
+            setNumberOfOvers(initialOvers.toString());
+        }
+    }, [isEditing, initialOvers]);
 
     const handleConfirm = () => {
         const overs = parseInt(numberOfOvers, 10);
         if (!isNaN(overs)) {
             onConfirm(overs);
             setNumberOfOvers('');
+            onCancel();//dismiss modal
         }
     };
 
@@ -24,7 +31,9 @@ const AddMatchPopup: React.FC<AddMatchPopupProps> = ({ isVisible, onCancel, onCo
         <Modal visible={isVisible} animationType="slide" transparent>
             <View style={styles.modalContainer}>
                 <View style={styles.modalContent}>
-                    <Text style={styles.title}>Enter Number of Overs:</Text>
+                    <Text style={styles.title}>
+                        {isEditing ? 'Edit Number of Overs:' : 'Enter Number of Overs:'}
+                    </Text>
                     <TextInput
                         style={styles.input}
                         keyboardType="numeric"
@@ -32,12 +41,11 @@ const AddMatchPopup: React.FC<AddMatchPopupProps> = ({ isVisible, onCancel, onCo
                         onChangeText={setNumberOfOvers}
                     />
                     <View style={styles.buttonsContainer}>
-                       
-                        <TouchableOpacity style={styles.confirmButton} onPress={onCancel}>
-                            <Text style={styles.buttonText}>cancel</Text>
+                        <TouchableOpacity style={[styles.confirmButton, styles.cancelButton]} onPress={onCancel}>
+                            <Text style={styles.buttonText}>Cancel</Text>
                         </TouchableOpacity>
                         <TouchableOpacity style={styles.confirmButton} onPress={handleConfirm}>
-                            <Text style={styles.buttonText}>OK</Text>
+                            <Text style={styles.buttonText}>{isEditing ? 'Update' : 'OK'}</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
@@ -45,6 +53,7 @@ const AddMatchPopup: React.FC<AddMatchPopupProps> = ({ isVisible, onCancel, onCo
         </Modal>
     );
 };
+
 
 const styles = StyleSheet.create({
     modalContainer: {
@@ -73,9 +82,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'flex-end',
     },
-    cancelButton: {
-        marginRight: 10,
-    },
+
     confirmButton: {
         backgroundColor: 'blue',
         paddingVertical: 8,
@@ -85,6 +92,10 @@ const styles = StyleSheet.create({
     buttonText: {
         color: 'white',
         fontSize: 16,
+    },
+    cancelButton: {
+        marginRight: 10,
+        backgroundColor: 'gray', // Change the color for cancel button
     },
 });
 

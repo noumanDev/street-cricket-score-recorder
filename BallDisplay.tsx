@@ -1,10 +1,11 @@
 import React, { useRef, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { getOrdinalSuffix } from './utility';
+import _ from 'lodash';
 
 // (Rest of the code remains the same)
 
-const BallDisplay: React.FC<Props> = ({ balls  }) => {
+const BallDisplay: React.FC<Props> = ({ balls }) => {
     const scrollViewRef = useRef<ScrollView>(null);
 
     // Scroll to the last ball when the balls array changes
@@ -16,7 +17,7 @@ const BallDisplay: React.FC<Props> = ({ balls  }) => {
 
     // Group balls by overs
     const groupedBalls: Ball[][] = balls;
-    
+
     return (
         <ScrollView
             horizontal // Set the horizontal prop to display items horizontally
@@ -26,8 +27,9 @@ const BallDisplay: React.FC<Props> = ({ balls  }) => {
         >
             {groupedBalls.map((overBalls, overIndex) => (
                 <View key={overIndex} style={styles.overContainer}>
+                    <Text style={styles.scoreLabel}>score: {_.sumBy(overBalls, "score")} </Text>
+                    <Text style={styles.overLabel}>{`${overIndex + 1}${getOrdinalSuffix(overIndex + 1)} over`} </Text>
                     <View style={styles.overLine} />
-                    <Text style={styles.overLabel}>{`${overIndex + 1}${getOrdinalSuffix(overIndex + 1)} over`}</Text>
                     <ScrollView
                         horizontal // Set the horizontal prop to display balls horizontally within an over
                         contentContainerStyle={styles.overContentContainer}
@@ -75,11 +77,17 @@ const styles = StyleSheet.create({
         height: 2,
         backgroundColor: 'grey', // You can change the color for each over line here
         width: 40 * 6 + 10, // Total width of an over (6 balls + 10 for padding)
+        marginBottom: 8,
+        opacity:0.3
     },
     overLabel: {
         color: 'black', // You can change the color  for each over label here
         fontWeight: 'bold',
+    },
+    scoreLabel: {
+        color: 'grey', // You can change the color  for each over label here
         marginTop: 5,
+        opacity: 0.7
     },
     ball: {
         width: 30,
@@ -89,7 +97,7 @@ const styles = StyleSheet.create({
         marginHorizontal: 5,
         justifyContent: 'center',
         alignItems: 'center',
-        
+
     },
     wicketBall: {
         backgroundColor: '#cc0000',

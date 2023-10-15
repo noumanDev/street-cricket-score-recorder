@@ -1,20 +1,26 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import BallDisplay from './BallDisplay';
+import { useMatchContext } from './MatchContext';
 
 
-interface Props {
-    stats: InningStats;
-    balls: Ball[] | undefined;
-}
 
-const StatBoard: React.FC<Props> = ({ stats, balls }) => {
+
+const StatBoard: React.FC = () => {
+    const { currentInningStats: stats, currentInning } = useMatchContext();
 
     return (
-        <View style={styles.scoreDisplay}>
-            <View style={{flex:1}}>
-                <Text style={styles.score}>{stats.score}/{stats.wickets}</Text>
-                <Text style={styles.overs}>({stats.overDetails.oversCount.totalOvers}{`${stats.overDetails.oversCount.lastOverBalls < 6 ? "." + stats.overDetails.oversCount.lastOverBalls : ""}`})</Text>
+        <View style={styles.scoreContainer}>
+            <View style={{ flex: 1 }}>
+                <View style={styles.scoreDisplay}>
+                    <Text style={styles.score}>{stats.score}/{stats.wickets}</Text>
+                    <Text style={styles.overs}>({stats.overDetails.oversCount.totalOvers}{`${stats.overDetails.oversCount.lastOverBalls < 6 ? "." + stats.overDetails.oversCount.lastOverBalls : ""}`})</Text>
+                    {stats.secondInningSpecifics && <Text style={styles.target}>Target : {stats.secondInningSpecifics.target}</Text>}
+                </View>
+                <View>
+                    {stats.secondInningSpecifics && <Text style={styles.required}>need {stats.secondInningSpecifics.required} runs in {stats.secondInningSpecifics.remainingBalls} balls</Text>}
+                </View>
+
             </View>
             <View style={styles.ballDisplay}>
                 <BallDisplay balls={stats.overDetails.groupedBalls} />
@@ -25,7 +31,7 @@ const StatBoard: React.FC<Props> = ({ stats, balls }) => {
 };
 
 const styles = StyleSheet.create({
-    scoreDisplay: {
+    scoreContainer: {
         flex: 1,
         backgroundColor: 'white',
         padding: 10,
@@ -37,6 +43,33 @@ const styles = StyleSheet.create({
         alignSelf: 'center',
         marginBottom: 20,
         width: "100%"
+
+    },
+    scoreDisplay: {
+
+        backgroundColor: 'white',
+        padding: 10,
+        borderRadius: 28,
+        maxWidth: "80%",
+
+        alignSelf: 'center',
+        marginBottom: 20,
+        width: "100%",
+
+
+        elevation: 5, // Android
+        shadowColor: 'gray',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.7,
+        shadowRadius: 4,
+
+    },
+    target: {
+        textAlign: 'center',
+    },
+    required: {
+        textAlign: "center",
+        marginTop:-15
     },
     ballDisplay: {
         // alignSelf: 'flex-end',

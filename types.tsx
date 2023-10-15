@@ -26,10 +26,18 @@ type CricketMatch = {
     overs: number
 };
 
+interface SecondInningSpecifics {
+    target: number;
+    required:number;
+    remainingBalls: number;
+
+}
+
 interface InningStats {
     score: number;
     wickets: number;
-    overDetails:GroupedBallsAndOvers;
+    overDetails: GroupedBallsAndOvers;
+    secondInningSpecifics: SecondInningSpecifics | null
 }
 
 type GroupedBalls = Ball[][];
@@ -40,4 +48,5 @@ type OversCount = {
 type GroupedBallsAndOvers = {
     groupedBalls: GroupedBalls;
     oversCount: OversCount;
+    validDeliveries: number; //total valid balls in inning
 };
